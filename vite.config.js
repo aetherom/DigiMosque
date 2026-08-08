@@ -7,10 +7,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    strictPort: true,
-    hmr: {
-      clientPort: 443
-    }
+    strictPort: true
   },
   plugins: [
     react(),
@@ -33,18 +30,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\.aladhan\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'aladhan-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] }
-            }
-          }
-        ]
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
       }
     })
   ]
