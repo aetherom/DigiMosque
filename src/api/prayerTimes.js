@@ -1,7 +1,8 @@
+// src/api/prayerTimes.js
 import adhan from 'adhan';
 
 export async function getPrayerTimes(lat, lng, method = 2) {
-  // 1. Try Aladhan API
+  // 1. Try Aladhan API (Primary)
   try {
     const date = new Date();
     const dd = String(date.getDate()).padStart(2, '0');
@@ -23,7 +24,6 @@ export async function getPrayerTimes(lat, lng, method = 2) {
   const params = adhan.CalculationMethod.MuslimWorldLeague(); 
   const prayerTimes = new adhan.PrayerTimes(coordinates, new Date(), params);
   
-  // Format time to HH:MM
   const fmt = (t) => t.toTimeString().slice(0, 5);
 
   return {
@@ -35,11 +35,11 @@ export async function getPrayerTimes(lat, lng, method = 2) {
       Asr: fmt(prayerTimes.asr),
       Maghrib: fmt(prayerTimes.maghrib),
       Isha: fmt(prayerTimes.isha),
-      Imsak: fmt(new Date(prayerTimes.fajr.getTime() - 10 * 60000)), // 10 mins before Fajr
+      Imsak: fmt(new Date(prayerTimes.fajr.getTime() - 10 * 60000)),
     },
     date: {
       readable: new Date().toDateString(),
-      hijri: { date: "N/A", month: { en: "N/A" }, weekday: { en: "N/A" } }
+      hijri: { date: "N/A", month: { en: "N/A" }, weekday: { en: "N/A" }, year: "" }
     }
   };
 }
