@@ -1,14 +1,15 @@
+// src/App.jsx
 import { useState, useEffect } from 'react';
-import { MapPin, Loader2 } from 'lucide-react';
+import { Loader2, Clock, Compass, Map, Calendar } from 'lucide-react';
 import { getPrayerTimes } from './api/prayerTimes';
+import PrayerTimesView from './components/PrayerTimesView';
 
 export default function App() {
-  const [location, setLocation] = useState(null);
   const [prayerData, setPrayerData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('prayer');
 
-  // Auto-detect location on load
   useEffect(() => {
     detectLocation();
   }, []);
@@ -26,8 +27,6 @@ export default function App() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        setLocation({ lat: latitude, lng: longitude });
-        
         try {
           const data = await getPrayerTimes(latitude, longitude);
           setPrayerData(data);
@@ -53,53 +52,39 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-dark flex flex-col items-center p-6">
-      
-      {/* Header */}
-      <header className="w-full max-w-md text-center mt-8 mb-10">
-        <h1 className="text-3xl font-bold tracking-tight">DigiMosque</h1>
-        <div className="flex items-center justify-center gap-2 mt-2 text-sm text-dark/60">
-          <MapPin className="w-4 h-4 text-accent" />
-          <span>
-            {prayerData ? `${prayerData.date.readable} | ${prayerData.date.hijri.date} ${prayerData.date.hijri.month.en}` : 'Location not found'}
-          </span>
-        </div>
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      </header>
-
-      {/* Prayer Times Grid */}
-      {prayerData && (
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-lg border border-dark/5 p-6">
-          <h2 className="text-lg font-semibold mb-4 text-dark/80">Today's Prayers (Azan)</h2>
-          <div className="space-y-3">
-            {['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].map((prayer) => (
-              <div key={prayer} className="flex justify-between items-center p-3 rounded-xl hover:bg-dark/5 transition-colors">
-                <span className="font-medium text-dark/90">{prayer}</span>
-                <span className="font-mono text-dark/70">{prayerData.timings[prayer]}</span>
-              </div>
-            ))}
+    <div className="flex flex-col h-screen bg-white text-dark">
+      <main className="flex-1 overflow-y-auto no-scrollbar pb-20">
+        {error && (
+          <div className="p-4 m-4 bg-red-50 text-red-600 rounded-xl text-sm text-center">
+            {error}
+            <button onClick={detectLocation} className="block mx-auto mt-2 underline">Retry</button>
           </div>
-          
-          <div className="mt-4 pt-4 border-t border-dark/5">
-            <div className="flex justify-between items-center p-3 rounded-xl bg-accent/5">
-              <span className="font-medium text-accent">Sunrise</span>
-              <span className="font-mono text-accent/80">{prayerData.timings.Sunrise}</span>
-            </div>
-          </div>
-          
-          <p className="text-xs text-center mt-4 text-dark/40">
-            Data Source: {prayerData.source}
-          </p>
-        </div>
-      )}
+        )}
+        
+        {activeTab === 'prayer' && prayerData && <PrayerTimesView prayerData={prayerData} />}
+        {activeTab === 'qibla' && <div className="p-8 text-center text-dark/50">Qibla 3D Coming Next</div>}
+        {activeTab === 'mosques' && <div className="p-8 text-center text-dark/50">Mosques Map Coming Next</div>}
+        {activeTab === 'calendar' && <div className="p-8 text-center text-dark/50">Calendar Coming Next</div>}
+      </main>
 
-      <button 
-        onClick={detectLocation}
-        className="mt-8 px-6 py-3 bg-accent text-white rounded-xl font-medium hover:bg-accent/90 transition-colors shadow-sm"
-      >
-        Refresh Location
-      </button>
-
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-dark/10 flex justify-around py-3 z-50">
+        <NavButton icon={Clock} label="Prayers" isActive={activeTab === 'prayer'} onClick={() => setActiveTab('prayer')} />
+        <NavButton icon={Compass} label="Qibla" isActive={activeTab === 'qibla'} onClick={() => setActiveTab('qibla')} />
+        <NavButton icon={Map} label="Mosques" isActive={activeTab === 'mosques'} onClick={() => setActiveTab('mosques')} />
+        <NavButton icon={Calendar} label="Calendar" isActive={activeTab === 'calendar'} onClick={() => setActiveTab('calendar')} />
+      </nav>
     </div>
+  );
+}
+
+function NavButton({ icon: Icon, label, isActive, onClick }) {
+  return (
+    <button 
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 transition-colors ${isActive ? 'text-accent' : 'text-dark/40'}`}
+    >
+      <Icon className="w-6 h-6" />
+      <span className="text-xs font-medium">{label}</span>
+    </button>
   );
 }
